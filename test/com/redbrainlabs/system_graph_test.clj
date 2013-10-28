@@ -6,8 +6,10 @@
             [com.redbrainlabs.system-graph :refer :all]))
 
 
+(def lifecycle-sort :com.redbrainlabs.system-graph/lifecycle-sort)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Integration tests
+;;; Integration tests... since this library is 100% glue
 
 (defrecord Lifecycler [!started !stopped key value]
   Lifecycle
@@ -31,9 +33,9 @@
         system-graph (init-system graph {:x 4})]
 
     (fact "only tries to start/stop components that satisfy Lifecycle"
-      (-> system-graph meta :lifecycle-sort) => [:x-inc :subgraph :y])
+      (-> system-graph meta lifecycle-sort) => [:x-inc :subgraph :y])
     (fact "works with hierarchical graphs"
-      (-> system-graph :subgraph meta :lifecycle-sort) => [:x-squared :x-cubed])
+      (-> system-graph :subgraph meta lifecycle-sort) => [:x-squared :x-cubed])
     (fact "starts the deps using the toposort"
       (lifecycle/start system-graph) => system-graph
       @deps-started => [:x-inc :x-squared :x-cubed :y])

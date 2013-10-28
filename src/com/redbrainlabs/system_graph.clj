@@ -11,8 +11,8 @@
 ;;; Schemas
 
 (defn- has-lifecycle-sort? [obj]
-  (when-let [{:keys [lifecycle-sort]} (meta obj)]
-    (every? keyword? lifecycle-sort)))
+  (when-let [sort (-> obj meta ::lifecycle-sort)]
+    (every? keyword? sort)))
 
 (def SystemGraph* (s/pred has-lifecycle-sort? "contains :lifecycle-sort in metadata"))
 
@@ -41,12 +41,12 @@
   (let [topo-sort (topo-sort original-graph)]
     (-> (map->SystemGraph computed-system)
         (with-meta
-          {:topo-sort topo-sort
-           :lifecycle-sort (lifecycle-components topo-sort computed-system)}))))
+          {::topo-sort topo-sort
+           ::lifecycle-sort (lifecycle-components topo-sort computed-system)}))))
 
 (defn- lifecycle-toposort [system-graph]
   (s/validate SystemGraph* system-graph)
-  (-> system-graph meta :lifecycle-sort))
+  (-> system-graph meta ::lifecycle-sort))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public
