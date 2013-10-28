@@ -7,7 +7,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Integration tests for Lifecycle
+;;; Integration tests
 
 (defrecord Lifecycler [!started !stopped key value]
   Lifecycle
@@ -18,7 +18,7 @@
     (swap! !stopped conj key)
     this))
 
-(facts "about using system-graph"
+(facts "system-graph"
   (let [deps-started (atom [])
         deps-stopped (atom [])
         lifecycler (partial ->Lifecycler deps-started deps-stopped)
@@ -26,11 +26,14 @@
                   :x-cubed (fnk [x x-squared] (lifecycler :x-cubed (* x (:value x-squared))))}
         graph {:subgraph subgraph
                :y (fnk [[:subgraph x-cubed]] (lifecycler :y (inc (:value x-cubed))))
-               :x-inc (fnk [x] (lifecycler :x-inc (inc x)))}
+               :x-inc (fnk [x] (lifecycler :x-inc (inc x)))
+               :no-lifecycle (fnk [x-inc] :something-that-doesnt-implement-lifecycle)}
         system-graph (init-system graph {:x 4})]
 
-    (-> system-graph meta :topo-sort) => [:x-inc :subgraph :y]
-    (-> system-graph :subgraph meta :lifecycle-sort) => [:x-squared :x-cubed]
+    (fact "only tries to start/stop components that satisfy Lifecycle"
+      (-> system-graph meta :lifecycle-sort) => [:x-inc :subgraph :y])
+    (fact "works with hierarchical graphs"
+      (-> system-graph :subgraph meta :lifecycle-sort) => [:x-squared :x-cubed])
     (fact "starts the deps using the toposort"
       (lifecycle/start system-graph) => system-graph
       @deps-started => [:x-inc :x-squared :x-cubed :y])

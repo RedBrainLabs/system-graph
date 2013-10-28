@@ -1,6 +1,5 @@
 (ns com.redbrainlabs.system-graph
-  "Helper fns for Prismatic's Graph and SystemGraph fns for using Lifecycle"
-  (:require [com.stuartsierra.component :refer [Lifecycle] :as lifecycle]
+  (:require [com.stuartsierra.component :refer [Lifecycle] :as component]
             [plumbing
              [core  :as plumbing]
              [graph :as graph]]
@@ -20,13 +19,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Private
 
-(defn- map-vals-ordered [f init ordered-keys]
-  ;; TODO: move in our error handling for when a component fails to start...
-  (reduce (fn [m* key]
-            (update-in m* [key] f))
-          init
-          ordered-keys))
-
 (declare start-system stop-system)
 
 (defrecord SystemGraph []
@@ -38,7 +30,7 @@
 
 (defn- lifecycle-components
   "Filters the component-keys to only the vals of computed-system that satisfy Lifecycle.
-   The filtering preseves the ordering of the orginal component-keys."
+  The filtering preseves the ordering of the original component-keys."
   [component-keys computed-system]
   (->> component-keys
        (map (fn [k] [k (get computed-system k)]))
@@ -52,7 +44,7 @@
           {:topo-sort topo-sort
            :lifecycle-sort (lifecycle-components topo-sort computed-system)}))))
 
-(defn lifecycle-toposort [system-graph]
+(defn- lifecycle-toposort [system-graph]
   (s/validate SystemGraph* system-graph)
   (-> system-graph meta :lifecycle-sort))
 
@@ -60,8 +52,8 @@
 ;;; Public
 
 (defn compile-as-system-graph
-  "Compiles a Prismatic graph into using compile whose resulting fnk will return
-   SystemGraphs that comply with Lifecycle"
+  "Compiles a Prismatic graph using `compile` and wraps the functionality so that
+  the resulting fnk will return SystemGraphs that comply with Lifecycle."
   [compile g]
   (if (fn? g)
     g
@@ -69,23 +61,27 @@
           fnk (compile g)]
       (comp-fnk (partial system-graph g) fnk))))
 
-(def eager-compile-system-graph
+(def eager-compile
+  "Performs a #'plumbing.graph/eager-compile on the graph so that all the
+  computed results from the compiled fnk are SystemGraphs which satisfy Lifecycle."
   (partial compile-as-system-graph graph/eager-compile))
 
-(def eager-interpreted-system-graph
+(def eager-interpreted
+  "Performs a #'plumbing.graph/eager-compile on the graph so that all the
+  computed results from the compiled fnk are SystemGraphs which satisfy Lifecycle."
   (partial compile-as-system-graph graph/interpreted-eager-compile))
 
 (defn init-system
-  "Analogous to graph/run, initializes the graph as a SystemGraph with the given input. "
+  "Analogous to #'plumbing.graph/run, initializes the graph as a SystemGraph with the given input. "
   [g input]
-  ((eager-interpreted-system-graph g) input))
+  ((eager-interpreted g) input))
 
 (defn start-system
   "Recursively starts the system components in the correct order as implicity defined in the graph."
   [system-graph]
-  (map-vals-ordered lifecycle/start system-graph (-> system-graph lifecycle-toposort)))
+  (component/start-system system-graph (-> system-graph lifecycle-toposort)))
 
 (defn stop-system
   "Recursively stops the system components in the reverse order in which they were started."
   [system-graph]
-  (map-vals-ordered lifecycle/stop system-graph (-> system-graph lifecycle-toposort reverse)))
+  (component/stop-system system-graph (-> system-graph lifecycle-toposort)))
