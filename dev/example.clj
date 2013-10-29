@@ -1,7 +1,7 @@
 ;; The majority of this file originated from Component's example which
 ;; is MIT licensed by Stuart Sierra.
 ;; https://github.com/stuartsierra/component/blob/master/dev/examples.clj
-(ns examples
+(ns example
   (:require [com.redbrainlabs.system-graph :as system-graph]
             [com.stuartsierra.component :as component]
             [plumbing.core :refer [defnk fnk]]
