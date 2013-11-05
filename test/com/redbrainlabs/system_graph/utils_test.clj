@@ -21,5 +21,5 @@
     (fact "composes the positional fn in the metadata as well"
       ((-> with-inc meta :plumbing.fnk.impl/positional-info first) 5) => 26)
 
-    #_(fact "preserves the original fnk's schema"
+    (fact "preserves the original fnk's schema"
       (s/fn-schema with-inc)  => (s/fn-schema square-fnk))))
