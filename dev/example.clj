@@ -160,7 +160,7 @@
 ;; Sample usage:
 (comment
 
-;; We can see the Schema our system returns and takes:
+;; We can see the Schema our system returns and takes (if you're on the latest SNAPSHOT):
 (s/fn-schema example-system)
 ;; (=> {:example-component Any, :scheduler Any, :db Any}
 ;;     {:config {:example-component Any, :db Any}})
