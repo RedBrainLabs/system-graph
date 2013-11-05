@@ -57,7 +57,7 @@ approach as well as some great advice on applying it within a Clojure applicatio
 For a detailed walkthrough see the [example system].  Below is a quick walkthrough for people already familiar with
 [Graph] and [Component].
 
-[example system]: https://github.com/redbrianlabs/system-graph/blob/master/dev/example.clj
+[example system]: https://github.com/RedBrainLabs/system-graph/blob/master/dev/example.clj
 
 ```clojure
 (ns your-app
