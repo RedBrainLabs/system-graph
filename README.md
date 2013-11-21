@@ -106,7 +106,7 @@ For a detailed walkthrough see the [example system].  Below is a quick walkthrou
     this))
 
 (defnk component-c [component-a component-b baz]
-  (map->ComponentB {:component-a component-a
+  (map->ComponentC {:component-a component-a
                     :component-b component-b
                     :baz baz}))
 ```
