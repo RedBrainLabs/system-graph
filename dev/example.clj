@@ -11,8 +11,8 @@
 
 ;;; Schema Configs
 
-(def DBConfig {(s/required-key :host) s/String
-               (s/required-key :port) s/Number})
+(def DBConfig {(s/required-key :host) String
+               (s/required-key :port) Number})
 
 (def ExampleComponentConfig {:foo s/Any :bar s/Any})
 
