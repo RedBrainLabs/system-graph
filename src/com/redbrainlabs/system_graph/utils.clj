@@ -1,15 +1,24 @@
 (ns com.redbrainlabs.system-graph.utils
   "Utillity fns for working with Prismatic's Graph and fnk"
-  (:require [plumbing.graph :as graph]))
+  (:require [plumbing.graph :as graph]
+            [schema.core :as s]))
 
 (defn topo-sort
   "Returns the topological sort of a Prismatic graph"
   [g]
-  ;; Prismatic Graphs are stored in an array-map *in* topological sort.  It would be
-  ;; better if Graph provided a fn like this so we wouldn't have to rely on the
-  ;; implementation details of it and of array-map...
   (-> g graph/->graph keys vec))
 
+;; TODO: see if plumbing already has a fn for this... or helper fns that seem less intrusive..
+(defn fnk-deps [fnk]
+  (->> fnk
+       s/fn-schema
+       :input-schemas ;; [[#schema.core.One{:schema {Keyword Any, :funk Any, :x Any}, :optional? false, :name arg0}]]
+       ffirst
+       :schema
+       keys
+       (filter keyword?)))
+
+;; TODO: see if plumbing's `comp-partial` does what I need (as suggested by Jason Wolfe)
 (defn comp-fnk
   "Composes the given given fnk with the provided fn. Only handles the binary case."
   [f fnk]

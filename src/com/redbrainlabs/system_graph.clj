@@ -1,32 +1,15 @@
-(ns com.redbrainlabs.system-graph
-  (:require [com.stuartsierra.component :refer [Lifecycle] :as component]
-            [plumbing
-             [core  :as plumbing]
-             [graph :as graph]]
+ (ns com.redbrainlabs.system-graph
+  (:require [clojure.set :as set]
+
+            [com.stuartsierra.component :refer [Lifecycle] :as component]
+            [plumbing.core :as plumbing]
+            [plumbing.graph :as graph]
             [schema.core :as s]
 
-            [com.redbrainlabs.system-graph.utils :refer [topo-sort comp-fnk]]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Schemas
-
-(defn- has-lifecycle-sort? [obj]
-  (when-let [sort (-> obj meta ::lifecycle-sort)]
-    (every? keyword? sort)))
-
-(def SystemGraph* (s/pred has-lifecycle-sort? "contains :lifecycle-sort in metadata"))
+            [com.redbrainlabs.system-graph.utils :refer [topo-sort comp-fnk fnk-deps]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Private
-
-(declare start-system stop-system)
-
-(defrecord SystemGraph []
-  Lifecycle
-  (start [system-graph]
-    (start-system system-graph))
-  (stop [system-graph]
-    (stop-system system-graph)))
 
 (defn- lifecycle-components
   "Filters the component-keys to only the vals of computed-system that satisfy Lifecycle.
@@ -34,32 +17,51 @@
   [component-keys computed-system]
   (->> component-keys
        (map (fn [k] [k (get computed-system k)]))
-       (filter (fn [[k component]] (satisfies? Lifecycle component)))
+       (filter (fn [[k component]]
+                 (and
+                  (satisfies? Lifecycle component)
+                  ;; this check is needed since 'component' now includes a default
+                  ;; impl on Object... but there is an implicit requirement that
+                  ;; the component is an IObj for metadata support.
+                  (isa? (class component) clojure.lang.IObj))))
        (mapv first)))
 
-(defn- system-graph [original-graph computed-system]
-  (let [topo-sort (topo-sort original-graph)]
-    (-> (map->SystemGraph computed-system)
-        (with-meta
-          {::topo-sort topo-sort
-           ::lifecycle-sort (lifecycle-components topo-sort computed-system)}))))
+(defn- attach-component-metadata [computed-system original-graph compiled-fnk lifecycle-comps]
+  (let [passed-in-args (fnk-deps compiled-fnk)
+        lifecycle-comps (set lifecycle-comps)
+        lifecycle-deps (->> lifecycle-comps
+                            (map (fn [k]
+                                   (->> k
+                                        (get original-graph)
+                                        fnk-deps
+                                        set
+                                        (set/intersection lifecycle-comps)
+                                        vec)))
+                            (zipmap lifecycle-comps))]
+    (reduce-kv (fn [m* k deps] (update-in m* [k] component/using deps))
+               computed-system lifecycle-deps)))
 
-(defn- lifecycle-toposort [system-graph]
-  (s/validate SystemGraph* system-graph)
-  (-> system-graph meta ::lifecycle-sort))
+(defn- create-system-map [original-graph compiled-fnk computed-system]
+  (let [lifecycle-comps (lifecycle-components (topo-sort original-graph) computed-system)]
+    (-> computed-system
+        (attach-component-metadata original-graph compiled-fnk lifecycle-comps)
+        component/map->SystemMap)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public
 
 (defn compile-as-system-graph
   "Compiles a Prismatic graph using `compile` and wraps the functionality so that
-  the resulting fnk will return SystemGraphs that comply with Lifecycle."
+  the resulting fnk will return a 'component' SystemMap that complies with Lifecycle.
+
+  All of the dependency information implicyt with the graph and fnks is carried over
+  into the SystemMap and component vals using `component/using`. "
   [compile g]
   (if (fn? g)
     g
     (let [g (-> (plumbing/map-vals (partial compile-as-system-graph compile) g) graph/->graph)
           fnk (compile g)]
-      (comp-fnk (partial system-graph g) fnk))))
+      (comp-fnk (partial create-system-map g fnk) fnk))))
 
 (def eager-compile
   "Performs a #'plumbing.graph/eager-compile on the graph so that all the
@@ -79,9 +81,9 @@
 (defn start-system
   "Recursively starts the system components in the correct order as implicity defined in the graph."
   [system-graph]
-  (component/start-system system-graph (-> system-graph lifecycle-toposort)))
+  (component/start-system system-graph))
 
 (defn stop-system
   "Recursively stops the system components in the reverse order in which they were started."
   [system-graph]
-  (component/stop-system system-graph (-> system-graph lifecycle-toposort)))
+  (component/stop-system system-graph))

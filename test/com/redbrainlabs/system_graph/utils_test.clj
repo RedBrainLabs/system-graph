@@ -1,6 +1,7 @@
 (ns com.redbrainlabs.system-graph.utils-test
   (:require [midje.sweet :refer :all]
             [plumbing.core :refer [fnk]]
+            [plumbing.graph :as graph]
             [schema.core :as s]
 
             [com.redbrainlabs.system-graph.utils :refer :all]))
@@ -23,3 +24,8 @@
 
     (fact "preserves the original fnk's schema"
       (s/fn-schema with-inc)  => (s/fn-schema square-fnk))))
+
+(facts "#'fnk-deps"
+  (fnk-deps (fnk [a b c])) => (just [:a :b :c] :in-any-order)
+  (fact "works on compiled graphs"
+    (-> {:a (fnk [x] x) :b (fnk [y] y)} graph/eager-compile fnk-deps) => (just [:x :y] :in-any-order)))
