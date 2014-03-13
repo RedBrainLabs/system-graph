@@ -198,9 +198,15 @@ does not.  It may in the future if we see enough need for those features.
 
 ## Change Log
 
-* Version 0.1.1-SNAPSHOT (current Git master branch)
+* Version 0.2.0-SNAPSHOT (current Git master branch)
+  * Upgraded to latest 'plumbing' and 'component' (both 0.2.1)
+  * Using 'component's generic `SystemMap`. Got rid of `SystemGraph` wrapper.
+  * Fixed [#2] where dependent components were not assoced onto the requiring
+    component before being started. 'system-graph' is now using
+    `component/using` as it should to declare the dependencies.
 * Version [0.1.0] released on November 4, 2013
 
+[#2]: https://github.com/RedBrainLabs/system-graph/issues/2
 [0.1.0]: https://github.com/redbrianlabs/system-graph/tree/system-graph-0.1.0
 
 
