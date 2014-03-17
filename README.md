@@ -156,13 +156,13 @@ For a detailed walkthrough see the [example system].  Below is a quick walkthrou
 
 Again, please see the [example system] for a more detailed explanation.
 
-## Tradeoffs
+## Declaring dependencies
 
 The nice thing about using Graph is that the dependency graph is computed automatically
-using the fnks. This requires that you place all of a component's dependencies in the
-fnk constructor.  It also requires that the names of your components be consistent across
-Graphs and fnks.  Contrast this to 'Component' where you have to explicitly list your
-component's dependencies out like so:
+using the fnks. One downside to this is that it requires that you place all of a component's
+dependencies in the fnk constructor.  It also requires that the names of your components be
+consistent across Graphs and fnks.  Contrast this to 'Component' where you have to explicitly
+list your component's dependencies out like so:
 
 ```clojure
    (component/using
@@ -181,8 +181,65 @@ your component but need to start before it can start (e.g. components that requi
 the database be put in a certain state). It also allows you to have context-specific names
 within each component.
 
-'system-graph' could provide an API that would allow for these use cases but for now it
-does not.  It may in the future if we see enough need for those features.
+'system-graph' provides the best of both worlds. If the name of your dependent component is
+one-to-one with your sytem then you do not need to do anything. If you would like to have
+context-specific names within a component, like the example above, then use 'component's
+API on your fnk constructor like so:
+
+```clojure
+   (component/using
+     fnk-that-creates-example-component
+     {:database  :db})
+;;     ^          ^
+;;     |          |
+;;     |          \- Keys in the ExampleSystem record
+;;     |
+;;     \- Keys in the ExampleComponent record
+```
+
+Here is a full example:
+
+```clojure
+(ns repl-example
+  (:require [com.stuartsierra.component :refer [Lifecycle] :as component]
+            [com.redbrainlabs.system-graph :as system-graph]
+            [plumbing.core :refer [fnk]]))
+
+
+(defrecord DummyComponent [name started]
+  Lifecycle
+  (start [this] (assoc this :started true))
+  (stop [this] (assoc this :started false)))
+
+(defn dummy-component [name]
+  (->DummyComponent name false))
+
+(def graph {:a (fnk []
+                    (dummy-component :a))
+            :b (-> (fnk [a]
+                        (-> (dummy-component :b)
+                            (assoc :foo a)))
+                   (component/using {:foo :a}))})
+                   ;;;  ^ note how we are 'using' on our fnk
+
+(def init (system-graph/eager-compile graph))
+
+(def system (init {}))
+;; => #com.stuartsierra.component.SystemMap{
+;;     :a #repl_example.DummyComponent{:name :a, :started false}
+;;     :b #repl_example.DummyComponent{:name :b, :started false,
+;;                                     :foo #repl_example.DummyComponent{:name :a, :started false}}}
+
+;; note ^ how the :foo in :b is :a and has not been started!
+
+(def started-system (component/start system))
+;; => #com.stuartsierra.component.SystemMap{
+;;     :a #repl_example.DummyComponent{:name :a, :started true}
+;;     :b #repl_example.DummyComponent{:name :b, :started true,
+;;                                     :foo #repl_example.DummyComponent{:name :a, :started true}}}
+
+;; ^ before start of :b was called the :a was started and then assoc'ed onto :b as :foo
+```
 
 ## References / More Information
 
@@ -204,6 +261,9 @@ does not.  It may in the future if we see enough need for those features.
   * Fixed [#2] where dependent components were not assoced onto the requiring
     component before being started. 'system-graph' is now using
     `component/using` as it should to declare the dependencies.
+  * 'component' metadata (via  `component/using`) on fnks are propogated to
+     resulting components. This allows for context-specific names and for
+     declaring side-effecty deps that aren't really needed in the component.
 * Version [0.1.0] released on November 4, 2013
 
 [#2]: https://github.com/RedBrainLabs/system-graph/issues/2
