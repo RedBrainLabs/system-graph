@@ -1,5 +1,5 @@
 (ns com.redbrainlabs.system-graph-test
-  (:require [com.stuartsierra.component :refer [Lifecycle] :as lifecycle]
+  (:require [com.stuartsierra.component :refer [Lifecycle] :as component]
             [plumbing.core :refer [fnk]]
             [midje.sweet :refer :all]
 
@@ -34,10 +34,10 @@
         system-graph (init-system graph {:x 4})]
 
     (fact "starts the lifecycle deps using a toposort"
-      (lifecycle/start system-graph)
+      (component/start system-graph)
       @deps-started => [:x-squared :x-cubed :y :x-inc])
     (fact "stops the deps in the opposite order"
-      (lifecycle/stop system-graph)
+      (component/stop system-graph)
       @deps-stopped => [:x-inc :y :x-cubed :x-squared])))
 
 (defrecord DummyComponent [name started]
@@ -60,6 +60,20 @@
       (:b system-graph) => (just {:a {:name :a, :started false}, :name :b, :started false}))
     (facts "are started and assoced onto lifecycle components before then dependent's #'start is called"
       (:b started-system) => (just {:a {:name :a, :started true}, :name :b, :started true}))))
+
+(facts "dependent components with different names that the system's names"
+  (let [graph {:a (fnk []
+                       (dummy-component :a))
+               :b (-> (fnk [a]
+                           (-> (dummy-component :b)
+                               (assoc :foo a)))
+                      (component/using {:foo :a}))}
+        system-graph (init-system graph {})
+        started-system (start-system system-graph)]
+    (facts "are passed in to fnks before they are started"
+      (:b system-graph) => (just {:foo {:name :a, :started false}, :name :b, :started false}))
+    (facts "are started and assoced onto lifecycle components with the different name before then dependent's #'start is called"
+      (:b started-system) => (just {:foo {:name :a, :started true}, :name :b, :started true}))))
 
 (defrecord StatefulDummyComponent [name started !counter]
   Lifecycle

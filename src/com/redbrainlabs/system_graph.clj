@@ -26,19 +26,23 @@
                   (isa? (class component) clojure.lang.IObj))))
        (mapv first)))
 
+(def dependencies :com.stuartsierra.component/dependencies)
+
 (defn- attach-component-metadata [computed-system original-graph compiled-fnk lifecycle-comps]
-  (let [passed-in-args (fnk-deps compiled-fnk)
-        lifecycle-comps (set lifecycle-comps)
+  (let [lifecycle-comps (set lifecycle-comps)
         lifecycle-deps (->> lifecycle-comps
                             (map (fn [k]
-                                   (->> k
-                                        (get original-graph)
-                                        fnk-deps
-                                        set
-                                        (set/intersection lifecycle-comps)
-                                        vec)))
+                                   (let [original-fnk (get original-graph k)
+                                         original-dep-metadata (-> original-fnk meta dependencies)
+                                         inferred-deps (-> original-fnk
+                                                           fnk-deps
+                                                           set
+                                                           (set/intersection lifecycle-comps)
+                                                           (set/difference (-> original-dep-metadata vals set)))]
+                                     (merge (zipmap inferred-deps inferred-deps) original-dep-metadata))))
                             (zipmap lifecycle-comps))]
-    (reduce-kv (fn [m* k deps] (update-in m* [k] component/using deps))
+    (reduce-kv (fn [m* k deps]
+                 (update-in m* [k] component/using deps))
                computed-system lifecycle-deps)))
 
 (defn- create-system-map [original-graph compiled-fnk computed-system]
