@@ -16,20 +16,20 @@ order] of the components is implicitly defined by the Graph's [Fnks].
 
 * Releases are published to [Clojars]
 
-* Latest stable release is [0.1.0](https://clojars.org/com.redbrainlabs/system-graph/versions/0.1.0)
+* Latest stable release is [0.2.0](https://clojars.org/com.redbrainlabs/system-graph/versions/0.2.0)
 
 * [All releases](https://clojars.org/com.redbrainlabs/system-graph/versions)
 
 [Leiningen] dependency information:
 
-    [com.redbrainlabs/system-graph "0.1.0"]
+    [com.redbrainlabs/system-graph "0.2.0"]
 
 [Maven] dependency information:
 
     <dependency>
       <groupId>com.redbrainlabs</groupId>
       <artifactId>system-graph</artifactId>
-      <version>0.1.0</version>
+      <version>0.2.0</version>
     </dependency>
 
 [Component]: https://github.com/stuartsierra/component
@@ -255,7 +255,7 @@ Here is a full example:
 
 ## Change Log
 
-* Version 0.2.0-SNAPSHOT (current Git master branch)
+* Version [0.2.0] released on April 27, 2014
   * Upgraded to 'plumbing' 0.2.2 and 'component' 0.2.1
   * Using 'component's generic `SystemMap`. Got rid of `SystemGraph` wrapper.
   * Fixed [#2] where dependent components were not assoced onto the requiring
@@ -268,6 +268,7 @@ Here is a full example:
 
 [#2]: https://github.com/RedBrainLabs/system-graph/issues/2
 [0.1.0]: https://github.com/redbrianlabs/system-graph/tree/system-graph-0.1.0
+[0.2.0]: https://github.com/redbrianlabs/system-graph/tree/system-graph-0.2.0
 
 
 ## Copyright and License
