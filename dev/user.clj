@@ -11,7 +11,6 @@
    [clojure.string :as str]
    [clojure.tools.namespace.repl :refer (refresh refresh-all)]
 
-   [cemerick.pomegranate :refer (add-dependencies)]
    [plumbing.core :refer :all]
    [midje.repl :as test]
 
@@ -54,13 +53,3 @@
   []
   (stop)
   (refresh :after 'user/go))
-
-
-;; helper fns
-
-(defn add-deps
-  "Adds deps to your running REPL without restarting for fast experimentation."
-  [deps]
-  (add-dependencies :coordinates deps
-                    :repositories (merge cemerick.pomegranate.aether/maven-central
-                                         {"clojars" "http://clojars.org/repo"})))
