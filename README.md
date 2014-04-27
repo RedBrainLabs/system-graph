@@ -219,7 +219,7 @@ Here is a full example:
             :b (-> (fnk [a]
                         (-> (dummy-component :b)
                             (assoc :foo a)))
-                   (component/using {:foo :a}))})
+                            (component/using {:foo :a}))})
                    ;;;  ^ note how we are 'using' on our fnk
 
 (def init (system-graph/eager-compile graph))
@@ -256,7 +256,7 @@ Here is a full example:
 ## Change Log
 
 * Version 0.2.0-SNAPSHOT (current Git master branch)
-  * Upgraded to latest 'plumbing' and 'component' (both 0.2.1)
+  * Upgraded to 'plumbing' 0.2.2 and 'component' 0.2.1
   * Using 'component's generic `SystemMap`. Got rid of `SystemGraph` wrapper.
   * Fixed [#2] where dependent components were not assoced onto the requiring
     component before being started. 'system-graph' is now using
