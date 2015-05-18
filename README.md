@@ -255,6 +255,8 @@ Here is a full example:
 
 ## Change Log
 
+* Version [0.2.1] released on May 18, 2015
+  * Upgraded to 'plumbing' 0.4.3
 * Version [0.2.0] released on April 27, 2014
   * Upgraded to 'plumbing' 0.2.2 and 'component' 0.2.1
   * Using 'component's generic `SystemMap`. Got rid of `SystemGraph` wrapper.

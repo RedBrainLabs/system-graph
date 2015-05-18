@@ -1,4 +1,4 @@
-(defproject com.redbrainlabs/system-graph "0.2.0"
+(defproject com.redbrainlabs/system-graph "0.2.1"
   :description "Graph + Component for large system composition"
   :url "https://github.com/redbrainlabs/system-graph"
   :license {:name "Eclipse Public License"
