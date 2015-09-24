@@ -7,7 +7,7 @@
                  [prismatic/plumbing "0.5.0"]]
   :profiles {:dev {:plugins [[lein-midje "3.1.3-RC2"]]
                    :dependencies [[org.clojure/tools.namespace "0.2.4"]
-                                  [org.clojure/clojure "1.5.1"]
-                                  [midje "1.6-beta1"]]
+                                  [org.clojure/clojure "1.7.0"]
+                                  [midje "1.7.0"]]
                    :source-paths ["dev"]}}
   :aliases {"dumbrepl" ["trampoline" "run" "-m" "clojure.main/main"]})
