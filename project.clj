@@ -4,7 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[com.stuartsierra/component "0.2.1"]
-                 [prismatic/plumbing "0.4.3"]]
+                 [prismatic/plumbing "0.5.0"]]
   :profiles {:dev {:plugins [[lein-midje "3.1.3-RC2"]]
                    :dependencies [[org.clojure/tools.namespace "0.2.4"]
                                   [org.clojure/clojure "1.5.1"]
