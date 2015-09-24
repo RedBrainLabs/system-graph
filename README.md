@@ -16,20 +16,20 @@ order] of the components is implicitly defined by the Graph's [Fnks].
 
 * Releases are published to [Clojars]
 
-* Latest stable release is [0.2.1](https://clojars.org/com.redbrainlabs/system-graph/versions/0.2.1)
+* Latest stable release is [0.3.0](https://clojars.org/com.redbrainlabs/system-graph/versions/0.3.0)
 
 * [All releases](https://clojars.org/com.redbrainlabs/system-graph/versions)
 
 [Leiningen] dependency information:
 
-    [com.redbrainlabs/system-graph "0.2.1"]
+    [com.redbrainlabs/system-graph "0.3.0"]
 
 [Maven] dependency information:
 
     <dependency>
       <groupId>com.redbrainlabs</groupId>
       <artifactId>system-graph</artifactId>
-      <version>0.2.1</version>
+      <version>0.3.0</version>
     </dependency>
 
 [Component]: https://github.com/stuartsierra/component
@@ -37,6 +37,12 @@ order] of the components is implicitly defined by the Graph's [Fnks].
 [Leiningen]: http://leiningen.org/
 [Maven]: http://maven.apache.org/
 
+
+## Compatibility
+
+Version 0.3.0 of 'system-graph' requires Clojure version 1.7.0 or later.
+
+Version 0.2.1 of 'system-graph' is compatible with Clojure versions 1.4.0 and higher.
 
 ## Introduction
 
@@ -255,6 +261,9 @@ Here is a full example:
 
 ## Change Log
 
+* Version [0.3.0] released on September 24, 2015
+  * Upgraded to 'plumbing' 0.5.0 (latest version of Schema, yay!)
+  * Upgraded to 'component' 0.3.0 - this requires clojure 1.7.0 or higher!
 * Version [0.2.1] released on May 18, 2015
   * Upgraded to 'plumbing' 0.4.3
 * Version [0.2.0] released on April 27, 2014
